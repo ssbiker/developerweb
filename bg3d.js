@@ -1,7 +1,8 @@
 /* ══════════════════════════════════════════════════
-   bg3d.js — Three.js Cinematic 3D Scroller: El Reactor de Tritio Solar
-   - Photorealistic 24K Brushed Gold with Studio ACES ToneMapping & IBL Reflections
-   - Hyper-realistic Solar Fusion Plasma Core (GLSL Simplex Noise Shader with FBM Convection)
+   bg3d.js — Three.js Cinematic 3D Scroller: El Reactor de Tritio Solar (Spider-Man 2 Edition)
+   - Photorealistic Smooth Machined 24K Gold Sphere with Engraved Precision Channels
+   - Miniature Sun with Blinding Nuclear Core & Magnetic Plasma Coronal Arcs
+   - 3D Gimbal Magnetic Confinement Rings in Polished 24K Gold
    - 60/120 FPS Guaranteed on GPU (0 KB external download)
    ══════════════════════════════════════════════════ */
 
@@ -27,7 +28,6 @@
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
-  // Cinematic Hollywood Tone Mapping (prevents color burn, renders photorealistic metallic sheen)
   if (renderer.outputEncoding !== undefined) {
     renderer.outputEncoding = THREE.sRGBEncoding;
   }
@@ -37,16 +37,14 @@
   }
 
   // ── 2. Procedural Studio Environment Map (IBL) ──
-  // Simulates a professional lighting studio with warm and cool softboxes for genuine 24K reflections
   function createStudioEnvironment() {
     var c = document.createElement('canvas');
     c.width = 1024;
     c.height = 512;
     var ctx = c.getContext('2d');
 
-    // Dark studio gradient
     var bgGrad = ctx.createLinearGradient(0, 0, 0, 512);
-    bgGrad.addColorStop(0, '#1a1814');
+    bgGrad.addColorStop(0, '#1c1710');
     bgGrad.addColorStop(0.5, '#07090e');
     bgGrad.addColorStop(1, '#020305');
     ctx.fillStyle = bgGrad;
@@ -90,7 +88,6 @@
   scene.environment = studioEnvMap;
 
   // ── 3. Procedural Brushed Gold Bump Texture ──
-  // Generates microscopic milled grooves and fine brushed anisotropy for 24K jewelry realism
   function createBrushedGoldBumpMap() {
     var c = document.createElement('canvas');
     c.width = 512;
@@ -99,46 +96,44 @@
     ctx.fillStyle = '#808080';
     ctx.fillRect(0, 0, 512, 512);
 
-    // Micro-grooves and lathe brushing lines
     for (var y = 0; y < 512; y += 2) {
-      var noiseVal = (Math.random() - 0.5) * 40;
+      var noiseVal = (Math.random() - 0.5) * 35;
       var gray = Math.floor(128 + noiseVal);
       ctx.fillStyle = 'rgb(' + gray + ',' + gray + ',' + gray + ')';
       ctx.fillRect(0, y, 512, 1.2);
     }
-    // Subtle cross-hatch micro scratches
-    for (var i = 0; i < 400; i++) {
+    for (var i = 0; i < 300; i++) {
       var x = Math.random() * 512;
       var y = Math.random() * 512;
-      var len = 10 + Math.random() * 40;
-      ctx.strokeStyle = Math.random() > 0.5 ? 'rgba(180,180,180,0.15)' : 'rgba(80,80,80,0.15)';
+      var len = 10 + Math.random() * 35;
+      ctx.strokeStyle = Math.random() > 0.5 ? 'rgba(180,180,180,0.12)' : 'rgba(80,80,80,0.12)';
       ctx.lineWidth = 0.8;
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.lineTo(x + len, y + (Math.random() - 0.5) * 8);
+      ctx.lineTo(x + len, y + (Math.random() - 0.5) * 6);
       ctx.stroke();
     }
     var tex = new THREE.CanvasTexture(c);
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(3, 3);
+    tex.repeat.set(4, 4);
     return tex;
   }
   var goldBumpMap = createBrushedGoldBumpMap();
 
   // ── 4. Cinematic Lighting System ──
-  var ambientLight = new THREE.AmbientLight(0x40301c, 1.5);
+  var ambientLight = new THREE.AmbientLight(0x40301c, 1.6);
   scene.add(ambientLight);
 
-  var keyLight = new THREE.DirectionalLight(0xFFF0D0, 3.5);
+  var keyLight = new THREE.DirectionalLight(0xFFF3D6, 3.6);
   keyLight.position.set(6, 8, 5);
   scene.add(keyLight);
 
-  var frontLight = new THREE.DirectionalLight(0xFFE8B0, 2.8);
+  var frontLight = new THREE.DirectionalLight(0xFFE8B0, 2.6);
   frontLight.position.set(0, 2, 7);
   scene.add(frontLight);
 
-  var rimLight = new THREE.DirectionalLight(0x7098CC, 1.6);
+  var rimLight = new THREE.DirectionalLight(0x7098CC, 1.5);
   rimLight.position.set(-7, -4, -4);
   scene.add(rimLight);
 
@@ -149,41 +144,56 @@
   scene.add(coreGroup);
   coreGroup.add(tritiumLight);
 
-  // ── A. Coraza Exterior de Oro 24K (Esfera Poligonal Inactiva) ──
-  // Material de Oro 24K real con física de metales preciosos
+  // ── A. Esfera de Oro 24K Pulido Maquinada (Estado Inactivo en Hero) ──
+  // Material de Oro 24K real con física de metales preciosos (sin flatShading para reflejos fluidos)
   var goldMat = new THREE.MeshStandardMaterial({
-    color: 0xEDBC3E,            // Oro nórdico / 24K Gold
-    emissive: 0x2A1C06,         // Calidez interna
-    metalness: 0.96,            // Casi 100% reflectividad metálica
-    roughness: 0.16,            // Acabado pulido espejo con micro-relieve
+    color: 0xF2BF38,            // Oro 24K puro
+    emissive: 0x302008,         // Brillo interior sutil
+    metalness: 0.98,            // Metal puro espejo
+    roughness: 0.14,            // Acabado de pulido de joyería fina
     bumpMap: goldBumpMap,       // Micro-estriado de oro cepillado
-    bumpScale: 0.012,
-    flatShading: true,          // Facetas angulares de ingeniería aeroespacial
+    bumpScale: 0.008,
     transparent: true,
     opacity: 0.98
   });
 
-  // Esfera facetada exterior (Armadura de placas de oro)
-  var goldShellGeo = new THREE.IcosahedronGeometry(1.5, 1);
+  // Esfera de contención de precisión de alta definición
+  var goldShellGeo = new THREE.SphereGeometry(1.5, 64, 64);
   var goldShellMesh = new THREE.Mesh(goldShellGeo, goldMat);
   coreGroup.add(goldShellMesh);
 
-  // Biseles dorados de alta precisión en las ranuras mecánicas
-  var goldSeamsGeo = new THREE.IcosahedronGeometry(1.506, 1);
-  var goldSeamsMat = new THREE.MeshStandardMaterial({
-    color: 0xFFF0B0,
-    emissive: 0x997711,
-    metalness: 1.0,
-    roughness: 0.1,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.75
-  });
-  var goldSeamsMesh = new THREE.Mesh(goldSeamsGeo, goldSeamsMat);
-  coreGroup.add(goldSeamsMesh);
+  // Canales mecánicos grabados en la esfera (ranuras de contención magnética de tritio)
+  var channelGroup = new THREE.Group();
+  goldShellMesh.add(channelGroup);
 
-  // ── B. GLSL Hyper-Realistic Tritium Plasma Shader ──
-  // Simulación matemática de convección solar, celdas de calor y eyecciones magnéticas en GPU
+  var channelMat = new THREE.MeshStandardMaterial({
+    color: 0x664411,
+    metalness: 0.95,
+    roughness: 0.25
+  });
+
+  // Anillos ecuatoriales y meridianos empotrados en la superficie dorada
+  var ch1 = new THREE.Mesh(new THREE.TorusGeometry(1.502, 0.016, 16, 120), channelMat);
+  var ch2 = new THREE.Mesh(new THREE.TorusGeometry(1.502, 0.012, 16, 120), channelMat);
+  ch2.rotation.x = Math.PI / 2;
+  var ch3 = new THREE.Mesh(new THREE.TorusGeometry(1.502, 0.012, 16, 120), channelMat);
+  ch3.rotation.y = Math.PI / 2;
+  channelGroup.add(ch1, ch2, ch3);
+
+  // ── B. El Sol de Tritio de Spider-Man 2 (Miniature Star) ──
+  var sunGroup = new THREE.Group();
+  coreGroup.add(sunGroup);
+  sunGroup.scale.setScalar(0.35); // En reposo comprimido en el centro
+
+  // 1. Núcleo Incandescente Blanco Solar Nuclear
+  var sunCoreGeo = new THREE.SphereGeometry(0.72, 32, 32);
+  var sunCoreMat = new THREE.MeshBasicMaterial({
+    color: 0xFFFFFF // Blanco puro de fusión nuclear
+  });
+  var sunCoreMesh = new THREE.Mesh(sunCoreGeo, sunCoreMat);
+  sunGroup.add(sunCoreMesh);
+
+  // 2. Fotosfera Solar con GLSL Shader de convección y ebullición
   var plasmaVertexShader = [
     'varying vec2 vUv;',
     'varying vec3 vNormal;',
@@ -245,7 +255,7 @@
     'void main() {',
     '  vUv = uv;',
     '  vNormal = normalize(normalMatrix * normal);',
-    '  float disp = snoise(normal * 2.8 + vec3(0.0, 0.0, uTime * 0.45)) * 0.09;',
+    '  float disp = snoise(normal * 3.0 + vec3(0.0, 0.0, uTime * 0.5)) * 0.08;',
     '  vec3 newPosition = position + normal * disp;',
     '  vPosition = newPosition;',
     '  vWorldPosition = (modelMatrix * vec4(newPosition, 1.0)).xyz;',
@@ -313,84 +323,100 @@
     '}',
     '',
     'void main() {',
-    '  vec3 pos = vPosition * 3.4;',
+    '  vec3 pos = vPosition * 3.5;',
     '  float n1 = snoise(pos + vec3(0.0, uTime * 0.45, 0.0));',
     '  float n2 = snoise(pos * 2.2 - vec3(uTime * 0.65, 0.0, uTime * 0.35)) * 0.5;',
     '  float plasma = (n1 + n2 + 1.1) * 0.5;',
     '',
-    '  // Blackbody / Nuclear Convection Palette',
-    '  vec3 colDark = vec3(0.85, 0.18, 0.02);   // Fuego carmesí profundo',
-    '  vec3 colFlame = vec3(1.0, 0.68, 0.10);  // Oro solar incandescente',
-    '  vec3 colWhite = vec3(1.0, 0.98, 0.92);  // Núcleo blanco caliente de fusión',
+    '  // Spider-Man 2 Sun Palette (Nuclear Core)',
+    '  vec3 colDark = vec3(0.9, 0.2, 0.02);   // Fuego carmesí solar',
+    '  vec3 colFlame = vec3(1.0, 0.72, 0.12); // Plasma oro incandescente',
+    '  vec3 colWhite = vec3(1.0, 0.98, 0.94); // Núcleo blanco caliente de fusión',
     '',
     '  vec3 col = mix(colDark, colFlame, smoothstep(0.2, 0.65, plasma));',
     '  col = mix(col, colWhite, smoothstep(0.65, 0.98, plasma));',
     '',
-    '  // Borde Fresnel de halo electromagnético',
     '  vec3 viewDir = normalize(cameraPosition - vWorldPosition);',
     '  float fresnel = 1.0 - max(0.0, dot(viewDir, vNormal));',
-    '  fresnel = pow(fresnel, 2.2);',
-    '  col += vec3(1.0, 0.84, 0.35) * fresnel * 2.4;',
+    '  fresnel = pow(fresnel, 2.0);',
+    '  col += vec3(1.0, 0.85, 0.4) * fresnel * 2.5;',
     '',
-    '  gl_FragColor = vec4(col * uIntensity, 1.0);',
+    '  gl_FragColor = vec4(col * uIntensity, 0.85);',
     '}'
   ].join('\n');
 
   var plasmaUniforms = {
     uTime: { value: 0 },
-    uIntensity: { value: 0.35 }
+    uIntensity: { value: 0.4 }
   };
 
   var plasmaMat = new THREE.ShaderMaterial({
     vertexShader: plasmaVertexShader,
     fragmentShader: plasmaFragmentShader,
     uniforms: plasmaUniforms,
-    transparent: false
-  });
-
-  var plasmaCoreGeo = new THREE.SphereGeometry(0.85, 48, 48);
-  var plasmaCoreMesh = new THREE.Mesh(plasmaCoreGeo, plasmaMat);
-  plasmaCoreMesh.scale.setScalar(0.38);
-  coreGroup.add(plasmaCoreMesh);
-
-  // Corona solar exterior con filamentos de eyección
-  var coronaGeo = new THREE.IcosahedronGeometry(1.08, 2);
-  var coronaMat = new THREE.PointsMaterial({
-    color: 0xFFAA22,
-    size: 0.05,
     transparent: true,
-    opacity: 0.25,
     blending: THREE.AdditiveBlending
   });
-  var coronaMesh = new THREE.Points(coronaGeo, coronaMat);
-  coronaMesh.scale.setScalar(0.4);
-  coreGroup.add(coronaMesh);
+
+  var sunPhotosphereGeo = new THREE.SphereGeometry(0.88, 48, 48);
+  var sunPhotosphereMesh = new THREE.Mesh(sunPhotosphereGeo, plasmaMat);
+  sunGroup.add(sunPhotosphereMesh);
+
+  // 3. Arcos Magnéticos de Plasma (Coronal Loops de Spider-Man 2)
+  var loopGroup = new THREE.Group();
+  sunGroup.add(loopGroup);
+
+  var loopMat1 = new THREE.MeshBasicMaterial({
+    color: 0xFF3300,
+    transparent: true,
+    opacity: 0.88,
+    blending: THREE.AdditiveBlending
+  });
+  var loopMat2 = new THREE.MeshBasicMaterial({
+    color: 0xFFAA00,
+    transparent: true,
+    opacity: 0.92,
+    blending: THREE.AdditiveBlending
+  });
+
+  var loop1 = new THREE.Mesh(new THREE.TorusGeometry(1.08, 0.045, 16, 80, Math.PI), loopMat1);
+  loop1.position.set(0, 0.1, 0);
+  loop1.rotation.x = Math.PI / 3;
+  loopGroup.add(loop1);
+
+  var loop2 = new THREE.Mesh(new THREE.TorusGeometry(1.22, 0.038, 16, 80, Math.PI), loopMat2);
+  loop2.position.set(0, -0.1, 0);
+  loop2.rotation.y = Math.PI / 2.5;
+  loop2.rotation.z = Math.PI / 3;
+  loopGroup.add(loop2);
+
+  var loop3 = new THREE.Mesh(new THREE.TorusGeometry(1.32, 0.032, 16, 80, Math.PI), loopMat1);
+  loop3.rotation.x = -Math.PI / 3;
+  loop3.rotation.y = -Math.PI / 4;
+  loopGroup.add(loop3);
 
   // ── C. Anillos Gimbal de Confinamiento en Oro 24K Pulido ──
   var ringsGroup = new THREE.Group();
   coreGroup.add(ringsGroup);
 
   var ringMat = new THREE.MeshStandardMaterial({
-    color: 0xEDBC3E,
+    color: 0xF2BF38,
     metalness: 0.98,
     roughness: 0.12,
     bumpMap: goldBumpMap,
-    bumpScale: 0.008
+    bumpScale: 0.006
   });
 
-  var ring1Geo = new THREE.TorusGeometry(2.1, 0.034, 16, 120);
-  var ring1 = new THREE.Mesh(ring1Geo, ringMat);
+  var ring1 = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.034, 16, 120), ringMat);
   ring1.rotation.x = Math.PI / 3;
   ringsGroup.add(ring1);
 
-  var ring2Geo = new THREE.TorusGeometry(2.5, 0.027, 16, 140);
-  var ring2 = new THREE.Mesh(ring2Geo, ringMat);
+  var ring2 = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.027, 16, 140), ringMat);
   ring2.rotation.y = Math.PI / 4;
   ring2.rotation.x = -Math.PI / 6;
   ringsGroup.add(ring2);
 
-  var ring3Geo = new THREE.TorusGeometry(2.9, 0.021, 16, 160);
-  var ring3 = new THREE.Mesh(ring3Geo, ringMat);
+  var ring3 = new THREE.Mesh(new THREE.TorusGeometry(2.9, 0.021, 16, 160), ringMat);
   ring3.rotation.z = Math.PI / 5;
   ringsGroup.add(ring3);
 
@@ -470,23 +496,21 @@
     var delta = clock.getDelta();
     var time = clock.getElapsedTime();
 
-    // Actualizar tiempo en el shader de plasma de GPU
     plasmaUniforms.uTime.value = time;
 
     // Mouse lerp damping
     mouse.x += (mouse.targetX - mouse.x) * 0.05;
     mouse.y += (mouse.targetY - mouse.y) * 0.05;
 
-    // A. Rotación suave de la esfera dorada
-    goldShellMesh.rotation.y += 0.25 * delta;
-    goldShellMesh.rotation.x += 0.12 * delta;
-    goldSeamsMesh.rotation.copy(goldShellMesh.rotation);
+    // A. Rotación suave de la esfera de oro mecanizada
+    goldShellMesh.rotation.y += 0.22 * delta;
+    goldShellMesh.rotation.x += 0.10 * delta;
 
-    // B. Rotación turbulenta del plasma
-    plasmaCoreMesh.rotation.y -= 0.6 * delta;
-    plasmaCoreMesh.rotation.z += 0.3 * delta;
-    coronaMesh.rotation.y += 0.4 * delta;
-    coronaMesh.rotation.x -= 0.2 * delta;
+    // B. Rotación turbulenta del sol de Spider-Man 2 y sus arcos magnéticos
+    sunGroup.rotation.y -= 0.5 * delta;
+    loop1.rotation.z += 0.8 * delta;
+    loop2.rotation.x -= 0.7 * delta;
+    loop3.rotation.y += 0.6 * delta;
 
     // C. Rotación giroscópica de los anillos de oro 24K
     ring1.rotation.z += 0.5 * delta;
@@ -502,35 +526,28 @@
     var smoothActivation = activation * activation * (3 - 2 * activation);
 
     // 1. Apertura de la coraza de oro:
-    // Inactivo (Hero): escala 1.0, opacidad 0.98 (sólido oro macizo pulido)
-    // Activo: se abre a 1.48 y opacidad 0.48 dejando escapar la radiación
+    // Inactivo (Hero): escala 1.0, opacidad 0.98 (sólido oro 24K pulido)
+    // Activo: se abre a 1.48 y opacidad 0.40 dejando escapar la radiación
     var targetShellScale = THREE.MathUtils.lerp(1.0, 1.48, smoothActivation);
-    var targetShellOpacity = THREE.MathUtils.lerp(0.98, 0.48, smoothActivation);
+    var targetShellOpacity = THREE.MathUtils.lerp(0.98, 0.38, smoothActivation);
     goldShellMesh.scale.setScalar(targetShellScale);
-    goldSeamsMesh.scale.setScalar(targetShellScale * 1.002);
     goldMat.opacity = targetShellOpacity;
 
     // 2. Despliegue de los anillos de confinamiento:
     var targetRingsScale = THREE.MathUtils.lerp(0.76, 1.05, smoothActivation);
     ringsGroup.scale.setScalar(targetRingsScale);
 
-    // 3. Ignición del Plasma de Tritio (Shader):
-    // Inactivo: escala 0.38, intensidad shader 0.35
-    // Activo: escala 1.25, intensidad shader 2.2 con respiración de fotosfera viva
+    // 3. Ignición del Sol de Spider-Man 2:
+    // Inactivo: comprimido dentro de la esfera
+    // Activo: crece e irradia luz solar extrema
     var pulse = Math.sin(time * 3.5) * 0.06;
-    var targetPlasmaScale = THREE.MathUtils.lerp(0.38, 1.22 + pulse, smoothActivation);
-    var targetIntensity = THREE.MathUtils.lerp(0.35, 2.2 + pulse * 1.2, smoothActivation);
-    plasmaCoreMesh.scale.setScalar(targetPlasmaScale);
+    var targetSunScale = THREE.MathUtils.lerp(0.35, 1.25 + pulse, smoothActivation);
+    var targetIntensity = THREE.MathUtils.lerp(0.3, 2.5 + pulse * 1.2, smoothActivation);
+    sunGroup.scale.setScalar(targetSunScale);
     plasmaUniforms.uIntensity.value = targetIntensity;
 
-    // 4. Corona de chispas ardientes:
-    var targetCoronaScale = THREE.MathUtils.lerp(0.4, 1.35 + pulse * 1.5, smoothActivation);
-    var targetCoronaOpacity = THREE.MathUtils.lerp(0.2, 0.85, smoothActivation);
-    coronaMesh.scale.setScalar(targetCoronaScale);
-    coronaMat.opacity = targetCoronaOpacity;
-
-    // 5. Encendido de la PointLight interna:
-    var targetLightIntensity = THREE.MathUtils.lerp(0.35, 5.5 + pulse * 2, smoothActivation);
+    // 4. Encendido de la PointLight interna:
+    var targetLightIntensity = THREE.MathUtils.lerp(0.3, 6.0 + pulse * 2, smoothActivation);
     tritiumLight.intensity = targetLightIntensity;
 
     // F. Scrollytelling de Posición por Secciones
