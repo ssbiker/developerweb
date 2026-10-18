@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════
    PORTFOLIO - app.js
-   Reveal, filter, spotlight, 3D tilt, counters, parallax.
-   Safe without JS.
+   Reveal, segmented filter, spotlight, 3D spring tilt, counters, parallax.
+   Emil Kowalski & High-End Motion Engineering.
 ══════════════════════════════════════════════════ */
 
 (function () {
@@ -9,7 +9,7 @@
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ── 1. Reveal on scroll ── */
+  /* ── 1. Reveal on scroll (Subtle entrance, never scale 0) ── */
   var animated = document.querySelectorAll('[data-animate]');
   function reveal(el) { el.classList.add('in'); }
 
@@ -18,9 +18,12 @@
   } else {
     var observer = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        if (entry.isIntersecting) { reveal(entry.target); observer.unobserve(entry.target); }
+        if (entry.isIntersecting) {
+          reveal(entry.target);
+          observer.unobserve(entry.target);
+        }
       });
-    }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
+    }, { threshold: 0.1, rootMargin: '0px 0px -4% 0px' });
 
     animated.forEach(function (el) {
       if (el.getBoundingClientRect().top < window.innerHeight) reveal(el);
@@ -28,39 +31,44 @@
     });
   }
 
-  /* ── 1b. Word-by-word reveal (hero + contact titles) ── */
+  /* ── 1b. Word-by-word reveal (hero + contact titles, no orphaned punctuation) ── */
   var headings = document.querySelectorAll('.hero-title, .contact-title');
   headings.forEach(function (h) {
     if (reduceMotion) return;
 
+    var wordIndex = 0;
     Array.prototype.slice.call(h.childNodes).forEach(function (node) {
       if (node.nodeType === 3) {
+        var text = node.textContent;
+        var words = text.split(/\s+/).filter(Boolean);
+        if (!words.length) return;
+        var hasTrailingSpace = /\s$/.test(text);
         var frag = document.createDocumentFragment();
-        node.textContent.split(/(\s+)/).forEach(function (word) {
-          if (!word) return;
-          if (word.trim() === '') { frag.appendChild(document.createTextNode(' ')); return; }
+        words.forEach(function (word, idx) {
           var span = document.createElement('span');
           span.className = 'w';
           span.textContent = word;
+          span.style.setProperty('--i', wordIndex++);
           frag.appendChild(span);
+          if (idx < words.length - 1 || hasTrailingSpace) {
+            frag.appendChild(document.createTextNode(' '));
+          }
         });
         node.parentNode.replaceChild(frag, node);
       } else if (node.nodeType === 1) {
         if (node.classList && node.classList.contains('w')) return;
         var wrap = document.createElement('span');
         wrap.className = 'w';
+        wrap.style.setProperty('--i', wordIndex++);
         node.parentNode.insertBefore(wrap, node);
         wrap.appendChild(node);
       }
     });
-
-    var words = h.querySelectorAll('.w');
-    words.forEach(function (w, i) { w.style.setProperty('--i', i); });
   });
 
   var heroTitle = document.querySelector('.hero-title');
   if (heroTitle && !reduceMotion) {
-    setTimeout(function () { heroTitle.classList.add('in'); }, 150);
+    setTimeout(function () { heroTitle.classList.add('in'); }, 120);
   }
 
   /* ── 2. Animated odometer counters ── */
@@ -69,7 +77,7 @@
   function animateCount(el) {
     var target = parseFloat(el.getAttribute('data-count'));
     var suffix = el.getAttribute('data-suffix') || '';
-    var duration = 1600;
+    var duration = 1400;
     var start = null;
 
     function tick(now) {
@@ -93,36 +101,65 @@
         entries.forEach(function (entry) {
           if (entry.isIntersecting) { animateCount(entry.target); cObserver.unobserve(entry.target); }
         });
-      }, { threshold: 0.4 });
+      }, { threshold: 0.35 });
       counters.forEach(function (el) { cObserver.observe(el); });
     } else {
       counters.forEach(animateCount);
     }
   }
 
-  /* ── 3. Project filter ── */
+  /* ── 3. Project filter + Fluid Sliding Indicator ── */
+  var filterIndicator = document.getElementById('filterIndicator');
   var filterBtns = document.querySelectorAll('.filter-btn');
   var cards = document.querySelectorAll('.project');
+
+  function updateIndicator(activeBtn) {
+    if (!filterIndicator || !activeBtn) return;
+    filterIndicator.style.transform = 'translateX(' + activeBtn.offsetLeft + 'px)';
+    filterIndicator.style.width = activeBtn.offsetWidth + 'px';
+  }
+
+  var activeBtn = document.querySelector('.filter-btn.active');
+  if (activeBtn) {
+    requestAnimationFrame(function () { updateIndicator(activeBtn); });
+    window.addEventListener('resize', function () {
+      var current = document.querySelector('.filter-btn.active');
+      if (current) updateIndicator(current);
+    });
+  }
 
   filterBtns.forEach(function (btn) {
     btn.addEventListener('click', function () {
       filterBtns.forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
+      updateIndicator(btn);
+
       var f = btn.getAttribute('data-filter');
+      var delay = 0;
 
       cards.forEach(function (card) {
         var cats = (card.getAttribute('data-category') || '').split(' ');
         var show = (f === 'all' || cats.indexOf(f) !== -1);
-        card.classList.toggle('hidden', !show);
+
         if (show) {
+          card.classList.remove('hidden');
           card.style.opacity = '0';
-          requestAnimationFrame(function () { card.style.opacity = '1'; });
+          card.style.transform = 'translateY(14px) scale(0.97)';
+          var currentDelay = delay * 45;
+          delay++;
+          setTimeout(function () {
+            card.style.transition = 'opacity 260ms var(--ease-out), transform 260ms var(--ease-spring)';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0) scale(1)';
+          }, currentDelay);
+        } else {
+          card.classList.add('hidden');
         }
       });
     });
   });
 
-  /* ── 4. Spotlight + 3D tilt ── */
+  /* ── 4. Spotlight + 3D Spring Tilt (Lerp momentum physics) ── */
   var spotlightEls = document.querySelectorAll('.project, .service');
   var tiltEls = document.querySelectorAll('.project, .id-card');
 
@@ -137,16 +174,37 @@
     });
 
     tiltEls.forEach(function (el) {
+      var targetX = 0, targetY = 0;
+      var currentX = 0, currentY = 0;
+      var isHovered = false;
+      var rafId = null;
+
+      function render() {
+        currentX += (targetX - currentX) * 0.14;
+        currentY += (targetY - currentY) * 0.14;
+
+        if (isHovered || Math.abs(currentX) > 0.02 || Math.abs(currentY) > 0.02) {
+          el.style.transform = 'perspective(900px) rotateX(' + (-currentY * 6).toFixed(2) + 'deg) rotateY(' + (currentX * 8).toFixed(2) + 'deg) translateY(-4px)';
+          rafId = requestAnimationFrame(render);
+        } else {
+          el.style.transform = '';
+          rafId = null;
+        }
+      }
+
       el.addEventListener('mousemove', function (e) {
         var r = el.getBoundingClientRect();
-        var px = (e.clientX - r.left) / r.width - 0.5;
-        var py = (e.clientY - r.top) / r.height - 0.5;
-        el.style.transition = 'transform 0.12s ease-out';
-        el.style.transform = 'perspective(900px) rotateX(' + (-py * 8).toFixed(2) + 'deg) rotateY(' + (px * 10).toFixed(2) + 'deg) translateY(-4px)';
+        targetX = (e.clientX - r.left) / r.width - 0.5;
+        targetY = (e.clientY - r.top) / r.height - 0.5;
+        isHovered = true;
+        if (!rafId) rafId = requestAnimationFrame(render);
       });
+
       el.addEventListener('mouseleave', function () {
-        el.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
-        el.style.transform = '';
+        targetX = 0;
+        targetY = 0;
+        isHovered = false;
+        if (!rafId) rafId = requestAnimationFrame(render);
       });
     });
   }
@@ -192,5 +250,11 @@
         toggle.setAttribute('aria-label', 'Abrir menú');
       });
     });
+  }
+
+  /* ── 7. Dynamic Footer Year ── */
+  var yearEl = document.getElementById('currentYear');
+  if (yearEl) {
+    yearEl.textContent = '© ' + new Date().getFullYear() + ' Sergio Andrés';
   }
 })();
